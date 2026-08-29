@@ -62,8 +62,14 @@ class Class:
     def change_grade(self, assignment_name, new_points, new_category, new_category_weight):
         if not self.grades:
             raise ValueError("You must have a grade inputted before you can change your entries!")
-        
-        if grades(assignment_name)
+
+        # updates the points, category, and category weight from the previous grade_entry if desired by user
+        for entry in self.grades:
+            if entry["assignment_name"] == assignment_name:
+                entry["points"] = new_points
+                entry["category"] = new_category
+                entry["category_weight"] = new_category_weight
+
 
 
     
@@ -79,5 +85,6 @@ stat310 = Class("STAT310", 3)
 stat314 = Class("STAT314", 1)
 univ194 = Class("UNIV194", 0)
 comp140.add_grade("homework1", 95, "homework", 0.05)
+comp140.change_grade("homework1", 98, "exam", 0.40)
 
 print(comp140.check_added_grades())
