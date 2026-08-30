@@ -5,7 +5,7 @@ git commit -m "changes"
 git push
 """
 class Class:
-    def __init__(self, name, credit_hours):
+    def __init__(self, name: str, credit_hours: int | float) -> None:
         # check for errors in input
         if not(name):
             raise ValueError("The class must have a name! (enter your university class code)")
@@ -20,13 +20,16 @@ class Class:
         self.name = name
         self.credit_hours = credit_hours
         self.grades = []
+        self.categories = []
 
-    def __str__(self):
+    def __str__(self) -> str:
         # format for checking their grades and classes
         return f"\n************************************************\nClass Name: {self.name} ({self.credit_hours} credits)\nCurrent Grade: grade input here\nLetter Grade: placeholder A\n"
 
-    def add_grade(self, assignment_name, points, category, category_weight):
+    def add_grade(self, assignment_name: str, points: int | float, category: str) -> None:
         # check for errors in input
+        if not(self.categories) or not(any(category in cat for cat in self.categories)):
+            raise ValueError("The category has not been defined yet! Use the add_category method to add a category!")
         if not assignment_name:
             raise ValueError("The added grade entry must have a name!")
         elif not isinstance(assignment_name, str):
@@ -37,76 +40,34 @@ class Class:
             raise ValueError("There must be a category for the entry!")
         elif not isinstance(category, str):
             raise TypeError("The category entry must be a string!")
-        if not category_weight:
-            raise ValueError("The category must have a weight!")
-        elif not isinstance(category_weight, (int, float)):
-            raise TypeError("The weight of the category must be a *number* between 0 and 1! (please input a number)")
-        elif not (0 <= category_weight <= 1):
-            raise ValueError("The weight of the category must be a number *between 0 and 1*! (please convert the percent weight into a decimal)")
 
-        # add the entry for points, category, and category_weight into a dictionary
+        # add the entry for points, category into a dictionary
         grade_entry = {
             "assignment_name": assignment_name,
             "points": points,
-            "category": category,
-            "category_weight": category_weight
+            "category": category
         }
 
         # append temp dictionary into the grade_entry list
         self.grades.append(grade_entry)
 
-    def check_added_grades(self):
+    def check_added_grades(self) -> str:
         # allows the user to check the grades they added in a dictionary in list format
         print("\n")
         for index, entry in enumerate(self.grades):
-            print(f"Inputted grade {index + 1} has the name '{entry['assignment_name']}' belonging to the '{entry['category']}' category, with a weight of {entry['category_weight'] * 100}% of the grade. The assignment received a score of {entry['points']}%.")
+            print(f"Inputted grade {index + 1} has the name '{entry['assignment_name']}' belonging to the '{entry['category']}' category. The assignment received a score of {entry['points']}%.")
         return f"\n************************************************\nThe grades are within this chart below: {self.grades}\n"
 
-    def calculate_grade(self):
+    def calculate_grade(self) -> str:
         # checks that there are grades within the system.
         if not self.grades:
             return f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!"
-
-        # Groups assignments by category to calculate averages.
-        category_data = {}
-        for entry in self.grades:
-            category = entry["category"]
-            weight = entry["category_weight"]
-            points = entry["points"]
-            
-            if category not in category_data:
-                category_data[category] = {"total_points": 0, "count": 0, "weight": weight}
-            
-            category_data[category]["total_points"] += points
-            category_data[category]["count"] += 1
-
-        total_grade = 0
-        total_weight_used = 0
         
-        # Calculate weighted average based on categories present
-        for category, data in category_data.items():
-            category_average = data["total_points"] / data["count"]
-            total_grade += category_average * data["weight"]
-            total_weight_used += data["weight"]
-
-        # Scales the grade if categories aren't 100% of weight yet.
-        if total_weight_used > 0:
-            final_grade = (total_grade / total_weight_used) * (total_weight_used / 1.0) # Keeps it relative to what has been assigned
-        # calculates the items in the gradebook and sums it up.
-        temp_list = []
-        for entry in self.grades:
-            true_grade = entry["points"] * entry["category_weight"]
-            temp_list.append(true_grade)
-
-        # sums up the final grade
-        total_grade = 0
-        for grade in temp_list:
-            total_grade += grade
-
+        # Temporary placeholder variable to prevent NameError crash
+        total_grade = 0.0
         return f"The course grade based on current assignments in the course {self.name} is: {total_grade:.2f}%"
-        
 
-    def change_grade(self, assignment_name, new_points, new_category, new_category_weight):
+    def change_grade(self, assignment_name: str, new_points: int | float, new_category: str) -> None:
         if not self.grades:
             raise ValueError("You must have a grade inputted before you can change your entries!")
 
@@ -115,18 +76,49 @@ class Class:
             if entry["assignment_name"] == assignment_name:
                 entry["points"] = new_points
                 entry["category"] = new_category
-                entry["category_weight"] = new_category_weight
 
-    def remove_grade(self, assignment_name):
+    def remove_grade(self, assignment_name: str) -> None:
         # removes entry associated with the desired assignment.
-        temp_list = self.grades # for storage for error-checking later
+        remove_count = 0
         for index, entry in enumerate(self.grades):
             if entry["assignment_name"] == assignment_name:
                 item = self.grades[index]
                 self.grades.remove(item)
+                remove_count += 1
+
+        if remove_count == 0:
+            raise ValueError("The grade you tried to remove is not a pre-existing defined grade! Nothing has been removed.")
 
 
-    
+    def add_category(self, category: str, category_weight: int | float) -> None:
+        # error handling
+        if not category_weight:
+            raise ValueError("The category must have a weight!")
+        elif not isinstance(category_weight, (int, float)):
+            raise TypeError("The weight of the category must be a *number* between 0 and 1! (please input a number)")
+        elif not (0 <= category_weight <= 1):
+            raise ValueError("The weight of the category must be a number *between 0 and 1*! (please convert the percent weight into a decimal)")
+        elif any(category in cat for cat in self.categories):
+            raise ValueError("This category already exists!")
+
+        category_entry = {
+            f"{category}": category_weight
+        }
+        self.categories.append(category_entry)
+
+    def check_categories(self) -> list:
+        return self.categories
+
+    def remove_category(self, category: str) -> None:
+        remove_count = 0
+        for index, cat in enumerate(self.categories):
+            if category in cat:
+                item = self.categories[index]
+                self.categories.remove(item)
+                remove_count += 1
+
+        if remove_count == 0:
+            raise ValueError("The category you tried to remove is not a pre-existing defined category! Nothing has been removed.")
 
 
 
@@ -138,10 +130,16 @@ math212 = Class("MATH212", 3)
 stat310 = Class("STAT310", 3)
 stat314 = Class("STAT314", 1)
 univ194 = Class("UNIV194", 0)
-comp140.add_grade("homework1", 95, "homework", 0.05)
-comp140.add_grade("exam1", 88, "exam", 0.40)
-comp140.add_grade("recipe1", 72, "writing", 0.55)
+psyc203.add_category("homework", 0.10)
+psyc203.add_category("exams", 0.50)
+psyc203.add_category("written", 0.40)
+psyc203.add_category("random", 0.01)
 
+psyc203.remove_category("random")
 
-print(comp140.check_added_grades())
-print(comp140.calculate_grade())
+psyc203.add_grade("exam1", 98, "exams")
+psyc203.add_grade("exam2", 95, "exams")
+
+print(psyc203.check_categories())
+print(psyc203.check_added_grades())
+print(psyc203)
