@@ -63,13 +63,42 @@ class Class:
         return f"\n************************************************\nThe grades are within this chart below: {self.grades}\n"
 
     def calculate_grade(self):
+        # checks that there are grades within the system.
+        if not self.grades:
+            return f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!"
+
+        # Groups assignments by category to calculate averages.
+        category_data = {}
+        for entry in self.grades:
+            category = entry["category"]
+            weight = entry["category_weight"]
+            points = entry["points"]
+            
+            if category not in category_data:
+                category_data[category] = {"total_points": 0, "count": 0, "weight": weight}
+            
+            category_data[category]["total_points"] += points
+            category_data[category]["count"] += 1
+
+        total_grade = 0
+        total_weight_used = 0
+        
+        # Calculate weighted average based on categories present
+        for category, data in category_data.items():
+            category_average = data["total_points"] / data["count"]
+            total_grade += category_average * data["weight"]
+            total_weight_used += data["weight"]
+
+        # Scales the grade if categories aren't 100% of weight yet.
+        if total_weight_used > 0:
+            final_grade = (total_grade / total_weight_used) * (total_weight_used / 1.0) # Keeps it relative to what has been assigned
         # calculates the items in the gradebook and sums it up.
         temp_list = []
         for entry in self.grades:
             true_grade = entry["points"] * entry["category_weight"]
             temp_list.append(true_grade)
 
-        # sums it up
+        # sums up the final grade
         total_grade = 0
         for grade in temp_list:
             total_grade += grade
@@ -110,11 +139,9 @@ stat310 = Class("STAT310", 3)
 stat314 = Class("STAT314", 1)
 univ194 = Class("UNIV194", 0)
 comp140.add_grade("homework1", 95, "homework", 0.05)
-comp140.add_grade("homework2", 99, "homework", 0.05)
 comp140.add_grade("exam1", 88, "exam", 0.40)
 comp140.add_grade("recipe1", 72, "writing", 0.55)
 
-comp140.remove_grade('homework2')
 
 print(comp140.check_added_grades())
 print(comp140.calculate_grade())
