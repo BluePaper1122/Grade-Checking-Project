@@ -62,10 +62,23 @@ class Class:
         # checks that there are grades within the system.
         if not self.grades:
             return f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!"
-        
-        # Temporary placeholder variable to prevent NameError crash
-        total_grade = 0.0
+        total_grade = 0.00        # Temporary placeholder variable to prevent NameError crash | now functions as an initializatin for grades
+        categories = [list(cat.keys())[0] for cat in self.categories] # lists the category types in a list categories
+
+        for index in range(len(categories)):
+            grade_holder = 0.00
+            grades_in_category = 0
+            for grade in self.grades:
+                if grade['category'] == categories[index]:
+                    grade_holder += grade['points']
+                    grades_in_category += 1
+            if grades_in_category > 0:
+                total_grade = (total_grade) + ((grade_holder / grades_in_category) * self.categories[index][categories[index]])
+            else:
+                total_grade += 0
+
         return f"The course grade based on current assignments in the course {self.name} is: {total_grade:.2f}%"
+
 
     def change_grade(self, assignment_name: str, new_points: int | float, new_category: str) -> None:
         if not self.grades:
@@ -130,16 +143,18 @@ math212 = Class("MATH212", 3)
 stat310 = Class("STAT310", 3)
 stat314 = Class("STAT314", 1)
 univ194 = Class("UNIV194", 0)
-psyc203.add_category("homework", 0.10)
-psyc203.add_category("exams", 0.50)
-psyc203.add_category("written", 0.40)
-psyc203.add_category("random", 0.01)
+comp140.add_category("homework", 0.10)
+comp140.add_category("exams", 0.50)
+comp140.add_category("written", 0.40)
+comp140.add_category("random", 0.01)
 
-psyc203.remove_category("random")
+comp140.remove_category("random")
 
-psyc203.add_grade("exam1", 98, "exams")
-psyc203.add_grade("exam2", 95, "exams")
+comp140.add_grade("exam1", 98, "exams")
+comp140.add_grade("exam2", 95, "exams")
+comp140.add_grade("homework1", 92, "homework")
+comp140.add_grade("written_recipe_1", 88, "written")
 
-print(psyc203.check_categories())
-print(psyc203.check_added_grades())
-print(psyc203)
+print(comp140.check_categories())
+print(comp140.check_added_grades())
+print(comp140.calculate_grade())
