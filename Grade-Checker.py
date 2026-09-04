@@ -27,7 +27,7 @@ class Class:
 
     def __str__(self) -> str:
         # format for checking their grades and classes
-        return f"\n************************************************\nClass Name: {self.name} ({self.credit_hours} credits)\nCurrent Grade: grade input here\nLetter Grade: placeholder A\n"
+        return f"\n************************************************\nClass Name: {self.name} ({self.credit_hours} credits)\nCurrent Grade: {self.calculate_grade()}\nLetter Grade: {self.grade_converter}\n"
 
     def add_grade(self, assignment_name: str, points: int | float, category: str) -> None:
         # check for errors in input
@@ -64,7 +64,7 @@ class Class:
     def calculate_grade(self) -> str:
         # checks that there are grades within the system.
         if not self.grades:
-            return f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!"
+            raise ValueError(f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!")
         total_grade = 0.00        # Temporary placeholder variable to prevent NameError crash | now functions as an initializatin for grades
         categories = [list(cat.keys())[0] for cat in self.categories] # lists the category types in a list categories
 
@@ -146,28 +146,84 @@ class Class:
         if remove_count == 0:
             raise ValueError("The category you tried to remove is not a pre-existing defined category! Nothing has been removed.")
 
+    @property
+    def grade_converter(self):
+        # directly from previous calculate_grade method
+        if not self.grades:
+            raise ValueError(f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!")
+        total_grade = 0.00        # Temporary placeholder variable to prevent NameError crash | now functions as an initializatin for grades
+        categories = [list(cat.keys())[0] for cat in self.categories] # lists the category types in a list categories
+
+        for cat in categories:
+            # Checks if there is >=1 grade matching the category name.
+            has_grades = any(grade['category'] == cat for grade in self.grades)
+            
+            if not has_grades:
+                raise ValueError(
+                    f"Cannot calculate grades with empty grade categories! "
+                    f"The category '{cat}' has no grades. Remove categories that do not have "
+                    f"any grades using the 'remove_category' method!")
+
+        for index in range(len(categories)):
+            grade_holder = 0.00
+            grades_in_category = 0
+            for grade in self.grades:
+                if grade['category'] == categories[index]:
+                    grade_holder += grade['points']
+                    grades_in_category += 1
+            if grades_in_category > 0:
+                total_grade = (total_grade) + ((grade_holder / grades_in_category) * self.categories[index][categories[index]])
+            else:
+                total_grade += 0
+
+        if total_grade >= 93:
+            return "A"
+        elif total_grade >= 90:
+            return "A-"
+        elif total_grade >= 87:
+            return "B+"
+        elif total_grade >= 83:
+            return "B"
+        elif total_grade >= 80:
+            return "B-"
+        elif total_grade >= 77:
+            return "C+"
+        elif total_grade >= 73:
+            return "C"
+        elif total_grade >= 70:
+            return "C-"
+        elif total_grade >= 67:
+            return "D+"
+        elif total_grade >= 63:
+            return "D"
+        elif total_grade >= 60:
+            return "D-"
+        elif total_grade < 60:
+            return "F"
 
 
-# User uses this section to define grades and assignments
-comp140 = Class("COMP140", 4)
-psyc203 = Class("PSYC203", 3)
-bios310 = Class("BIOS310", 3)
-math212 = Class("MATH212", 3)
-stat310 = Class("STAT310", 3)
-stat314 = Class("STAT314", 1)
-univ194 = Class("UNIV194", 0)
-comp140.add_category("homework", 0.10)
-comp140.add_category("exams", 0.50)
-comp140.add_category("written", 0.40)
-comp140.add_category("random", 0.01)
+if __name__ == '__main__':
+    # User uses this section to define grades and assignments
+    comp140 = Class("COMP140", 4)
+    psyc203 = Class("PSYC203", 3)
+    bios310 = Class("BIOS310", 3)
+    math212 = Class("MATH212", 3)
+    stat310 = Class("STAT310", 3)
+    stat314 = Class("STAT314", 1)
+    univ194 = Class("UNIV194", 0)
+    comp140.add_category("homework", 0.10)
+    comp140.add_category("exams", 0.50)
+    comp140.add_category("written", 0.40)
+    comp140.add_category("random", 0.01)
 
-comp140.remove_category("random")
+    comp140.remove_category("random")
 
-comp140.add_grade("exam1", 98, "exams")
-comp140.add_grade("exam2", 95, "exams")
-comp140.add_grade("homework1", 92, "homework") # raises ValueError
-comp140.add_grade("written_recipe_1", 88, "written")
+    comp140.add_grade("exam1", 98, "exams")
+    comp140.add_grade("exam2", 95, "exams")
+    comp140.add_grade("homework1", 92, "homework") # raises ValueError
+    comp140.add_grade("written_recipe_1", 88, "written")
 
-print(comp140.check_categories())
-print(comp140.check_added_grades())
-print(comp140.calculate_grade())
+    print(comp140.check_categories())
+    print(comp140.check_added_grades())
+    print(comp140.calculate_grade())
+    print(comp140)
