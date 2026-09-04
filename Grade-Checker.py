@@ -146,7 +146,6 @@ class Class:
         if remove_count == 0:
             raise ValueError("The category you tried to remove is not a pre-existing defined category! Nothing has been removed.")
 
-    @property
     def grade_converter(self):
         # directly from previous calculate_grade method
         if not self.grades:
