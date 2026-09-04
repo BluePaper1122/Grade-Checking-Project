@@ -146,7 +146,6 @@ class Class:
         if remove_count == 0:
             raise ValueError("The category you tried to remove is not a pre-existing defined category! Nothing has been removed.")
 
-    @property
     def grade_converter(self):
         # directly from previous calculate_grade method
         if not self.grades:
@@ -227,4 +226,6 @@ if __name__ == '__main__':
     print(comp140.check_added_grades())
     print(comp140.calculate_grade())
     print(comp140)
-    # test push for clone
+
+    # test push for clone 2
+    # this is a test commit to ensure that the python file is still referenced by github
