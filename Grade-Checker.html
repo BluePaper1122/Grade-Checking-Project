@@ -1,3 +1,40 @@
 <!--
 this is a test commit
 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Checker Tool</title>
+</head>
+<body>
+    <h1>Grade Checker</h1>
+    
+    <h2>Description: </h2>
+    <p>This is a Grade Checking Tool that allows the user to list your classes, store the user's grades and assignment categories on their classes, and also calculate the class grade!</p>
+    
+    <h2>List of methods: </h2>
+
+    <h3>Assignment/Grade-level manipulations: </h3>
+    <p><strong>add_grade(assignment_name, points, category)</strong> -- Allows the user to add a string assignment name, numerical points (0-100), and the category the grade belongs in.</p>
+
+    <p><strong>change_grade(assignment_name, new_points, new_category)</strong> -- Allows the user to update a previous entry within the list of grades by adding a new numerical points (0-100) value and a new category (could be same as previous) that the grade belongs in.</p>
+
+    <p><strong>remove_grade(assignment_name)</strong> -- allows the user to delete a grade within the list of grades.</p>
+
+    <p><strong>check_added_grades()</strong> -- allows the user to check the grades they've entered in a dictionaries-in-list format.</p>
+
+    <p><strong>calculate_grade()</strong> -- allows the user to calculate the current grade in percent within the class, given that all categories have at least 1 grade.</p>
+
+    <p><strong>grade_converter()</strong> -- allows the user to calculate the current letter of the class based on a standard Rice University scale</p>
+
+    <h3>Category-level manipulations</h3>
+    <p><strong>add_category(category, category_weight)</strong> -- allows the user to add a category with the corresponding category weight (between 0 and 1).</p>
+
+    <p><strong>remove_category(category)</strong> -- allows the user to delete a category within the list of categories.</p>
+
+    <p><strong>check_categories()</strong> -- allows the user to check the categories and weights they've entered in a dictionaries-in-list format</p>
+</body>
+</html>
