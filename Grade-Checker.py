@@ -7,7 +7,7 @@ git push
 import numpy as np
 import matplotlib as plt
 
-class Class:
+class Course:
     def __init__(self, name: str, credit_hours: int | float) -> None:
         # check for errors in input
         if not(name):
@@ -26,8 +26,19 @@ class Class:
         self.categories = []
 
     def __str__(self) -> str:
+        def check_error_calculate_grade(calculate_grade):
+            try:
+                return calculate_grade()
+            except ValueError:
+                return "N/A"
+        def check_error_grade_converter(grade_converter):
+            try:
+                return grade_converter()
+            except ValueError:
+                return "N/A"
+
         # format for checking their grades and classes
-        return f"\n************************************************\nClass Name: {self.name} ({self.credit_hours} credits)\nCurrent Grade: {self.calculate_grade()}\nLetter Grade: {self.grade_converter}\n"
+        return f"\n************************************************\nClass Name: {self.name} ({self.credit_hours} credits)\nCurrent Grade: {check_error_calculate_grade(self.calculate_grade)}\nLetter Grade: {check_error_grade_converter(self.grade_converter)}\n"
 
     def add_grade(self, assignment_name: str, points: int | float, category: str) -> None:
         # check for errors in input
@@ -63,35 +74,39 @@ class Class:
 
     def calculate_grade(self) -> str:
         # checks that there are grades within the system.
-        if not self.grades:
-            raise ValueError(f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!")
-        total_grade = 0.00        # Temporary placeholder variable to prevent NameError crash | now functions as an initializatin for grades
-        categories = [list(cat.keys())[0] for cat in self.categories] # lists the category types in a list categories
+        try:
+            if not self.grades:
+                raise ValueError(f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!")
+            total_grade = 0.00        # Temporary placeholder variable to prevent NameError crash | now functions as an initializatin for grades
+            categories = [list(cat.keys())[0] for cat in self.categories] # lists the category types in a list categories
 
-        for cat in categories:
-            # Checks if there is >=1 grade matching the category name.
-            has_grades = any(grade['category'] == cat for grade in self.grades)
+            for cat in categories:
+                # Checks if there is >=1 grade matching the category name.
+                has_grades = any(grade['category'] == cat for grade in self.grades)
+                
+                if not has_grades:
+                    raise ValueError(
+                        f"Cannot calculate grades with empty grade categories! "
+                        f"The category '{cat}' has no grades. Remove categories that do not have "
+                        f"any grades using the 'remove_category' method!")
+
+            for index in range(len(categories)):
+                grade_holder = 0.00
+                grades_in_category = 0
+                for grade in self.grades:
+                    if grade['category'] == categories[index]:
+                        grade_holder += grade['points']
+                        grades_in_category += 1
+                if grades_in_category > 0:
+                    total_grade = (total_grade) + ((grade_holder / grades_in_category) * self.categories[index][categories[index]])
+                else:
+                    total_grade += 0
+
+            return f"The course grade based on current assignments in the course {self.name} is: {total_grade:.2f}%"
+        except ValueError as e:
+            raise ValueError(f"Grade Entry Error: {e}")
+
             
-            if not has_grades:
-                raise ValueError(
-                    f"Cannot calculate grades with empty grade categories! "
-                    f"The category '{cat}' has no grades. Remove categories that do not have "
-                    f"any grades using the 'remove_category' method!")
-
-        for index in range(len(categories)):
-            grade_holder = 0.00
-            grades_in_category = 0
-            for grade in self.grades:
-                if grade['category'] == categories[index]:
-                    grade_holder += grade['points']
-                    grades_in_category += 1
-            if grades_in_category > 0:
-                total_grade = (total_grade) + ((grade_holder / grades_in_category) * self.categories[index][categories[index]])
-            else:
-                total_grade += 0
-
-        return f"The course grade based on current assignments in the course {self.name} is: {total_grade:.2f}%"
-
 
     def change_grade(self, assignment_name: str, new_points: int | float, new_category: str) -> None:
         if not self.grades:
@@ -147,69 +162,99 @@ class Class:
             raise ValueError("The category you tried to remove is not a pre-existing defined category! Nothing has been removed.")
 
     def grade_converter(self):
-        # directly from previous calculate_grade method
-        if not self.grades:
-            raise ValueError(f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!")
-        total_grade = 0.00        # Temporary placeholder variable to prevent NameError crash | now functions as an initializatin for grades
-        categories = [list(cat.keys())[0] for cat in self.categories] # lists the category types in a list categories
+        try: 
+            # directly from previous calculate_grade method
+            if not self.grades:
+                raise ValueError(f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!")
+            total_grade = 0.00        # Temporary placeholder variable to prevent NameError crash | now functions as an initializatin for grades
+            categories = [list(cat.keys())[0] for cat in self.categories] # lists the category types in a list categories
 
-        for cat in categories:
-            # Checks if there is >=1 grade matching the category name.
-            has_grades = any(grade['category'] == cat for grade in self.grades)
+            for cat in categories:
+                # Checks if there is >=1 grade matching the category name.
+                has_grades = any(grade['category'] == cat for grade in self.grades)
+                
+                if not has_grades:
+                    raise ValueError(
+                        f"Cannot calculate grades with empty grade categories! "
+                        f"The category '{cat}' has no grades. Remove categories that do not have "
+                        f"any grades using the 'remove_category' method!")
+
+            for index in range(len(categories)):
+                grade_holder = 0.00
+                grades_in_category = 0
+                for grade in self.grades:
+                    if grade['category'] == categories[index]:
+                        grade_holder += grade['points']
+                        grades_in_category += 1
+                if grades_in_category > 0:
+                    total_grade = (total_grade) + ((grade_holder / grades_in_category) * self.categories[index][categories[index]])
+                else:
+                    total_grade += 0
+
+            if total_grade >= 93:
+                return "A"
+            elif total_grade >= 90:
+                return "A-"
+            elif total_grade >= 87:
+                return "B+"
+            elif total_grade >= 83:
+                return "B"
+            elif total_grade >= 80:
+                return "B-"
+            elif total_grade >= 77:
+                return "C+"
+            elif total_grade >= 73:
+                return "C"
+            elif total_grade >= 70:
+                return "C-"
+            elif total_grade >= 67:
+                return "D+"
+            elif total_grade >= 63:
+                return "D"
+            elif total_grade >= 60:
+                return "D-"
+            elif total_grade < 60:
+                return "F"
+        except ValueError as e:
+            raise ValueError(f'Error in grade entry -- cannot assign letter grade: {e}')
+
+# second class decoupled for GPA calculation
+class GPACalculator:
+    def __init__(self, courses=None):
+        self.course = courses if courses else []
+
+    def add_class(self, course):
+        self.courses.append(course)
+
+    def calculate_gpa(self):
+        if not self.courses:
+            return 0.0
+
+        total_points = 0
+        total_credits = 0
+
+        for course in self.courses:
+            # Call the methods belonging to the individual Course object
+            grade_point = course.get_grade_point()
             
-            if not has_grades:
-                raise ValueError(
-                    f"Cannot calculate grades with empty grade categories! "
-                    f"The category '{cat}' has no grades. Remove categories that do not have "
-                    f"any grades using the 'remove_category' method!")
+            total_points += grade_point * course.credits
+            total_credits += course.credits
 
-        for index in range(len(categories)):
-            grade_holder = 0.00
-            grades_in_category = 0
-            for grade in self.grades:
-                if grade['category'] == categories[index]:
-                    grade_holder += grade['points']
-                    grades_in_category += 1
-            if grades_in_category > 0:
-                total_grade = (total_grade) + ((grade_holder / grades_in_category) * self.categories[index][categories[index]])
-            else:
-                total_grade += 0
-
-        if total_grade >= 93:
-            return "A"
-        elif total_grade >= 90:
-            return "A-"
-        elif total_grade >= 87:
-            return "B+"
-        elif total_grade >= 83:
-            return "B"
-        elif total_grade >= 80:
-            return "B-"
-        elif total_grade >= 77:
-            return "C+"
-        elif total_grade >= 73:
-            return "C"
-        elif total_grade >= 70:
-            return "C-"
-        elif total_grade >= 67:
-            return "D+"
-        elif total_grade >= 63:
-            return "D"
-        elif total_grade >= 60:
-            return "D-"
-        elif total_grade < 60:
-            return "F"
+        if total_credits == 0:
+            return 0.0
+            
+        return round(total_points / total_credits, 2)
 
 
 if __name__ == '__main__':
     # User uses this section to define grades and assignments
-    comp140 = Class("COMP140", 4)
-    psyc203 = Class("PSYC203", 3)
-    bios310 = Class("BIOS310", 3)
-    math212 = Class("MATH212", 3)
-    stat310 = Class("STAT310", 3)
-    stat314 = Class("STAT314", 1)
-    univ194 = Class("UNIV194", 0)
+    comp140 = Course("COMP140", 4)
+    psyc203 = Course("PSYC203", 3)
+    bios310 = Course("BIOS310", 3)
+    math212 = Course("MATH212", 3)
+    stat310 = Course("STAT310", 3)
+    stat314 = Course("STAT314", 1)
+    univ194 = Course("UNIV194", 0)
     comp140.add_category("homework", 0.10)
     comp140.add_category("exams", 0.50)
     comp140.add_category("written", 0.40)
@@ -219,11 +264,13 @@ if __name__ == '__main__':
 
     comp140.add_grade("exam1", 98, "exams")
     comp140.add_grade("exam2", 95, "exams")
-    comp140.add_grade("homework1", 92, "homework") # raises ValueError
+    comp140.add_grade("homework1", 92, "homework") # raises ValueError if removed
     comp140.add_grade("written_recipe_1", 88, "written")
 
     print(comp140.check_categories())
     print(comp140.check_added_grades())
     print(comp140.calculate_grade())
-    print(comp140)
+    all_courses = [comp140, psyc203, bios310, math212, stat310, stat314, univ194]
+    for course in all_courses:
+        print(course)
     # test push for clone
