@@ -161,7 +161,7 @@ class Course:
         if remove_count == 0:
             raise ValueError("The category you tried to remove is not a pre-existing defined category! Nothing has been removed.")
 
-    def grade_converter(self):
+    def grade_converter(self) -> str:
         try: 
             # directly from previous calculate_grade method
             if not self.grades:
@@ -219,12 +219,14 @@ class Course:
             raise ValueError(f'Error in grade entry -- cannot assign letter grade: {e}')
 
 # second class decoupled for GPA calculation
-class GPACalculator:
-    def __init__(self, courses=None):
+class GPACalculator(Course):
+    def __init__(self, courses=None) -> None:
         self.course = courses if courses else []
 
-    def add_class(self, course):
-        self.courses.append(course)
+    def transfer_courses(self, *course: str) -> None:
+        for item in course:
+            self.courses.append(item)
+        return f"Courses successfuly initialized! Your courses to calculate GPA are: {self.courses}"
 
     def calculate_gpa(self):
         if not self.courses:
@@ -267,10 +269,7 @@ if __name__ == '__main__':
     comp140.add_grade("homework1", 92, "homework") # raises ValueError if removed
     comp140.add_grade("written_recipe_1", 88, "written")
 
-    print(comp140.check_categories())
-    print(comp140.check_added_grades())
-    print(comp140.calculate_grade())
-    all_courses = [comp140, psyc203, bios310, math212, stat310, stat314, univ194]
-    for course in all_courses:
-        print(course)
-    # test push for clone
+
+    #all_courses = [comp140, psyc203, bios310, math212, stat310, stat314, univ194]
+    #for course in all_courses:
+    #    print(course)
