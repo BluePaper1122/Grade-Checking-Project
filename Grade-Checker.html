@@ -10,11 +10,23 @@ this is a test commit
     <title>Grade Checker Tool</title>
 </head>
 <body>
-    <h1>Grade Checker</h1>
+    <h1>Grade Checker
+            <!-- PyScript CSS & JS -->
+        <link rel="stylesheet" href="https://pyscript.net">
+        <script type="module" src="https://pyscript.net"></script>
+    </h1>
+
+    <!-- Linking external Python script -->
+    <script type="py" src="main.py" config='{"packages":[]}'></script>
     
     <h2>Description: </h2>
     <p>This is a Grade Checking Tool that allows the user to list your classes, store the user's grades and assignment categories on their classes, and also calculate the class grade!</p>
-    
+    <!--
+    Below is the type bar.
+    -->
+    <label for="user-input">Type here:</label>
+    <input type="text" id="user-input" placeholder="Type something...">
+
     <h2>List of methods: </h2>
 
     <h3>Assignment/Grade-level manipulations: </h3>
