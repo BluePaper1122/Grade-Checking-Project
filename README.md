@@ -2,7 +2,10 @@
 
 A Python-based grade tracker that calculates weighted course grades and helps students organize assignments across different grading categories.
 
-This is my first programming project and is currently under active development as I learn Python and software development principles.
+Currently Under Active Development
+TL;DR Next steps:
+-Integrate a web-based approach
+-Check for edge cases and errors
 
 ## Features
 
