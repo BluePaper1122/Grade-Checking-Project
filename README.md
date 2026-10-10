@@ -58,6 +58,7 @@ The program uses these scores and their corresponding category weights to calcul
 ### Requirements
 
 - Python 3
+- Packages (future): numpy, pandas, matplotlib, scipy
 
 ### Installation
 
