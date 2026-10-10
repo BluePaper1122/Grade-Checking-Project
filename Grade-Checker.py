@@ -4,8 +4,10 @@ git add Grade-Checker.py
 git commit -m "changes"
 git push
 """
-import numpy as np
+from math import isfinite, isclose
 import matplotlib as plt
+import numpy as np
+import scipy as stats
 
 class Course:
     def __init__(self, name: str, credit_hours: int | float) -> None:
@@ -16,8 +18,8 @@ class Course:
             raise TypeError("The class must be a string! (enter your university class code)")
         if not(isinstance(credit_hours, (int, float))):
             raise ValueError(f"The credit hours must be an integer or float! Enter the credit hours for {name} in the object.")
-        elif credit_hours < 0:
-            raise ValueError(f"The credit hours must not be a negative value! Enter the credit hours for {name} in the object.")
+        elif not isfinite(credit_hours) or credit_hours < 0:
+            raise ValueError(f"The credit hours must be a finite, nonnegative value! Enter the credit hours for {name} in the object.")
 
         # initialize values for given inputs
         self.name = name
@@ -72,7 +74,7 @@ class Course:
             print(f"Inputted grade {index + 1} has the name '{entry['assignment_name']}' belonging to the '{entry['category']}' category. The assignment received a score of {entry['points']}%.")
         return f"\n************************************************\nThe grades are within this chart below: {self.grades}\n"
 
-    def calculate_grade(self) -> str:
+    def calculate_percentage(self) -> float:
         # checks that there are grades within the system.
         try:
             if not self.grades:
@@ -102,7 +104,9 @@ class Course:
                 else:
                     total_grade += 0
 
-            return f"The course grade based on current assignments in the course {self.name} is: {total_grade:.2f}%"
+            if not isclose(sum(weight for category in self.categories for weight in category.values()), 1.0):
+                raise ValueError("Category weights must add up to 1.0 (100%).")
+            return total_grade
         except ValueError as e:
             raise ValueError(f"Grade Entry Error: {e}")
 
@@ -161,92 +165,61 @@ class Course:
         if remove_count == 0:
             raise ValueError("The category you tried to remove is not a pre-existing defined category! Nothing has been removed.")
 
+    def calculate_grade(self) -> str:
+        percentage = self.calculate_percentage()
+        return f"The course grade based on current assignments in the course {self.name} is: {percentage:.2f}%"
+
     def grade_converter(self) -> str:
-        try: 
-            # directly from previous calculate_grade method
-            if not self.grades:
-                raise ValueError(f"No grades recorded for {self.name} yet. Enter a grade in order to check your current standing!")
-            total_grade = 0.00        # Temporary placeholder variable to prevent NameError crash | now functions as an initializatin for grades
-            categories = [list(cat.keys())[0] for cat in self.categories] # lists the category types in a list categories
+        percentage = self.calculate_percentage()
+        for minimum, letter in (
+            (93, "A"), (90, "A-"), (87, "B+"), (83, "B"),
+            (80, "B-"), (77, "C+"), (73, "C"), (70, "C-"),
+            (67, "D+"), (63, "D"), (60, "D-"),
+        ):
+            if percentage >= minimum:
+                return letter
+        return "F"
 
-            for cat in categories:
-                # Checks if there is >=1 grade matching the category name.
-                has_grades = any(grade['category'] == cat for grade in self.grades)
-                
-                if not has_grades:
-                    raise ValueError(
-                        f"Cannot calculate grades with empty grade categories! "
-                        f"The category '{cat}' has no grades. Remove categories that do not have "
-                        f"any grades using the 'remove_category' method!")
+    def get_grade_point(self) -> float:
+        return GPACalculator.GRADE_POINTS[self.grade_converter()]
 
-            for index in range(len(categories)):
-                grade_holder = 0.00
-                grades_in_category = 0
-                for grade in self.grades:
-                    if grade['category'] == categories[index]:
-                        grade_holder += grade['points']
-                        grades_in_category += 1
-                if grades_in_category > 0:
-                    total_grade = (total_grade) + ((grade_holder / grades_in_category) * self.categories[index][categories[index]])
-                else:
-                    total_grade += 0
+class GPACalculator:
+    # Adjust this mapping if your university uses a different GPA scale.
+    GRADE_POINTS = {
+        "A": 4.0, "A-": 3.7, "B+": 3.3, "B": 3.0, "B-": 2.7,
+        "C+": 2.3, "C": 2.0, "C-": 1.7, "D+": 1.3, "D": 1.0,
+        "D-": 0.7, "F": 0.0,
+    }
 
-            if total_grade >= 93:
-                return "A"
-            elif total_grade >= 90:
-                return "A-"
-            elif total_grade >= 87:
-                return "B+"
-            elif total_grade >= 83:
-                return "B"
-            elif total_grade >= 80:
-                return "B-"
-            elif total_grade >= 77:
-                return "C+"
-            elif total_grade >= 73:
-                return "C"
-            elif total_grade >= 70:
-                return "C-"
-            elif total_grade >= 67:
-                return "D+"
-            elif total_grade >= 63:
-                return "D"
-            elif total_grade >= 60:
-                return "D-"
-            elif total_grade < 60:
-                return "F"
-        except ValueError as e:
-            raise ValueError(f'Error in grade entry -- cannot assign letter grade: {e}')
-
-# second class decoupled for GPA calculation
-class GPACalculator(Course):
     def __init__(self, courses=None) -> None:
-        self.course = courses if courses else []
+        self.courses: list[Course] = []
+        if courses is not None:
+            self.transfer_courses(*courses)
 
-    def transfer_courses(self, *course: str) -> None:
-        for item in course:
-            self.courses.append(item)
-        return f"Courses successfuly initialized! Your courses to calculate GPA are: {self.courses}"
+    def transfer_courses(self, *courses: Course) -> str:
+        if any(not isinstance(course, Course) for course in courses):
+            raise TypeError("Pass Course objects, not course names.")
+        for course in courses:
+            if course in self.courses:
+                raise ValueError(f"{course.name} has already been added.")
+        if len({id(course) for course in courses}) != len(courses):
+            raise ValueError("The same Course object cannot be added twice.")
+        self.courses.extend(courses)
+        names = ", ".join(course.name for course in self.courses)
+        return f"Courses successfully initialized! Your courses to calculate GPA are: {names}"
 
-    def calculate_gpa(self):
-        if not self.courses:
-            return 0.0
-
-        total_points = 0
-        total_credits = 0
-
+    def calculate_gpa(self) -> float:
+        total_points = 0.0
+        total_credits = 0.0
         for course in self.courses:
-            # Call the methods belonging to the individual Course object
-            grade_point = course.get_grade_point()
-            
-            total_points += grade_point * course.credits
-            total_credits += course.credits
-
+            # Zero-credit courses do not affect GPA or need recorded grades.
+            if course.credit_hours == 0:
+                continue
+            total_points += course.get_grade_point() * course.credit_hours
+            total_credits += course.credit_hours
         if total_credits == 0:
             return 0.0
-            
         return round(total_points / total_credits, 2)
-
 
 if __name__ == '__main__':
     # User uses this section to define grades and assignments
@@ -268,6 +241,22 @@ if __name__ == '__main__':
     comp140.add_grade("exam2", 95, "exams")
     comp140.add_grade("homework1", 92, "homework") # raises ValueError if removed
     comp140.add_grade("written_recipe_1", 88, "written")
+
+    psyc203.add_category("homework", 0.10)
+    psyc203.add_category("exams", 0.50)
+    psyc203.add_category("written", 0.40)
+    psyc203.add_category("random", 0.01)
+    
+    psyc203.remove_category("random")
+    
+    psyc203.add_grade("exam1", 97, "exams")
+    psyc203.add_grade("exam2", 92, "exams")
+    psyc203.add_grade("homework1", 100, "homework") # raises ValueError if removed
+    psyc203.add_grade("essay1", 95, "written")
+
+    calculator = GPACalculator()
+    print(calculator.transfer_courses(comp140, psyc203))
+    print(f"GPA: {calculator.calculate_gpa():.2f}")
 
 
     #all_courses = [comp140, psyc203, bios310, math212, stat310, stat314, univ194]
