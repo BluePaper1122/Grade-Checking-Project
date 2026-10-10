@@ -113,13 +113,13 @@ This project is being developed as a way to practice and apply concepts includin
 - [x] Grade calculation
 - [x] Grade editing
 - [x] Grade removal
-- [ ] Refactor course and category data models
-- [ ] Improve validation
-- [ ] Handle ungraded categories correctly
+- [x] Refactor course and category data models
+- [x] Improve validation
+- [x] Handle ungraded categories correctly
 
 ### v1.0 — Complete CLI Application
 - [ ] Target-grade calculator
-- [ ] GPA calculator
+- [x] GPA calculator
 - [ ] Save and load course data
 - [ ] Unit tests
 - [ ] Improved command-line interface
